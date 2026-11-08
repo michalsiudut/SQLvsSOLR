@@ -1,0 +1,2 @@
+method,median_ms,runs_ms,number_of_groups
+SQL GROUP BY,577.391,603.291;558.830;577.391;551.552;578.078,19

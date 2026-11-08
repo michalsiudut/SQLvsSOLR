@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <title>Lab 3 — SQL kontra Apache Solr</title>
+  <style>
+    @page { size: A4; margin: 18mm 16mm; }
+    body { font: 10.5pt/1.48 Arial, sans-serif; color: #202b3c; }
+    h1 { color: #17365d; font-size: 25pt; margin-bottom: 4px; }
+    h2 { color: #174a7e; border-bottom: 1px solid #c9d8e8; padding-bottom: 4px; margin-top: 24px; }
+    h3 { color: #355b7d; margin-bottom: 4px; }
+    p { margin: 7px 0; }
+    table { border-collapse: collapse; width: 100%; margin: 10px 0 16px; font-size: 9pt; }
+    th, td { border: 1px solid #d5dee8; padding: 6px 7px; text-align: left; vertical-align: top; }
+    th { background: #eaf1f8; }
+    code { font: 9pt "Liberation Mono", monospace; background: #f0f3f6; padding: 1px 3px; }
+    img { display: block; max-width: 100%; max-height: 165mm; margin: 12px auto; }
+    .subtitle { color: #596a7d; font-size: 12pt; }
+    .note { background: #fff6df; border-left: 4px solid #e3aa34; padding: 9px 12px; }
+    .ok { color: #18764b; font-weight: bold; }
+    .todo { color: #a25900; font-weight: bold; }
+    .page-break { page-break-before: always; }
+    .small { color: #627185; font-size: 8.5pt; }
+    ul { margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Lab 3 — SQL kontra Apache Solr</h1>
+  <p class="subtitle">Wyszukiwanie pełnotekstowe, facety i pomiary skalowania</p>
+  <p><b>Autor:</b> Michal ____________________ &nbsp; <b>Data:</b> ____________________</p>
+
+  <h2>1. Cel i zakres</h2>
+  <p>Celem projektu jest porównanie PostgreSQL z Apache Solr podczas wyszukiwania w dużym zbiorze artykułów. Wykonano import danych, indeksowanie pełnotekstowe, przykładowe zapytania, facety oraz testy skalowania dla 50 000, 250 000 i 500 000 rekordów.</p>
+  <p>Systemy uruchomiono w Dockerze. Wykorzystano PostgreSQL 17, Apache Solr 10 i Python 3.12.3.</p>
+
+  <h2>2. Dane</h2>
+  <p>Zbiór pochodzi z Hugging Face: <code>wikimedia/structured-wikipedia</code>, konfiguracja <code>enwiki_namespace_0</code> (angielska Wikipedia). Plik <code>data-set/wikipedia.csv</code> ma 500 000 rekordów i około 843 MiB.</p>
+  <table>
+    <tr><th>Kontrola</th><th>Wynik</th></tr>
+    <tr><td>Rekordy / unikalne ID</td><td>500 000 / 500 000</td></tr>
+    <tr><td>Puste wartości</td><td>0 w kontrolowanych kolumnach</td></tr>
+    <tr><td>Długość tekstu</td><td>średnio 1 686 znaków; minimum 300</td></tr>
+    <tr><td>Kategorie</td><td><code>topic</code> — 7 wartości; <code>article_type</code> — 6 wartości</td></tr>
+    <tr><td>Data</td><td>500 000 poprawnych wartości <code>date_modified</code></td></tr>
+  </table>
+  <p>Tekst w loaderze danych jest ograniczony do maksymalnie 5000 znaków. Kategorie są tworzone heurystycznie w <code>data-set/download.py</code>, a nie pochodzą bezpośrednio z etykiet eksperckich. Przed dalszą redystrybucją danych należy sprawdzić warunki licencji zbioru i źródła.</p>
+
+  <h2>3. PostgreSQL</h2>
+  <p>Tabela <code>wikipedia_articles</code> zawiera <code>id BIGINT PRIMARY KEY</code>, tytuł, tekst, kategorie, datę oraz <code>search_vector TSVECTOR</code>. Wektor wyszukiwania budowany jest z tytułu i tekstu za pomocą angielskiej konfiguracji PostgreSQL. Indeks <code>GIN</code> przyspiesza operator <code>@@</code>.</p>
+  <p>Zapytania obejmują wyszukiwanie słowa <code>run</code>, porównanie z <code>LIKE '%run%'</code>, frazę <code>United States</code> oraz warunek logiczny <code>history AND (war OR peace) AND NOT fiction</code>.</p>
+  <table>
+    <tr><th>Zapytanie SQL</th><th>Dopasowane artykuły</th><th>Przykładowy czas</th></tr>
+    <tr><td>Full text: <code>run</code></td><td>28 800</td><td>75,036 ms</td></tr>
+    <tr><td><code>LIKE</code>: <code>%run%</code></td><td>48 804</td><td>782,404 ms</td></tr>
+    <tr><td>Fraza: <code>United States</code></td><td>38 148</td><td>222,591 ms</td></tr>
+    <tr><td>Warunek AND/OR/NOT</td><td>4 240</td><td>13,238 ms</td></tr>
+  </table>
+  <p class="small">To pojedyncze pomiary z pierwszego testu, a nie mediany pięciu powtórzeń.</p>
+
+  <h2>4. Apache Solr</h2>
+  <p>W core <code>wikipedia</code> zaindeksowano te same 500 000 dokumentów. Pola tekstowe <code>title</code> i <code>text</code> są indeksowane i przechowywane. Kategorie i data dodatkowo mają <code>docValues</code>, co ułatwia faceting i sortowanie. Wszystkie pola są pojedynczej wartości (<code>multiValued=false</code>). Automatyczne tworzenie pól schemaless wyłączono.</p>
+  <p>Zapytania korzystają z eDisMax i pól <code>title^3 text</code>, zwracają do 10 dokumentów posortowanych według score, a osobny przykład prezentuje highlighting oraz facety.</p>
+  <table>
+    <tr><th>Zapytanie Solr</th><th>Dopasowane dokumenty</th></tr>
+    <tr><td>Słowo <code>run</code></td><td>14 492</td></tr>
+    <tr><td>Fraza <code>United States</code></td><td>38 188</td></tr>
+    <tr><td>Warunek logiczny</td><td>3 984</td></tr>
+  </table>
+  <p>Autouzupełnianie przez Terms Component działa na indeksie tytułów; prefiks <code>foot</code> zwrócił m.in. <code>football</code> i <code>footballer</code>.</p>
+
+  <h2>5. Skalowanie wyszukiwania</h2>
+  <p>Każdy pomiar poprzedzono rozgrzewką, a czas zapytania mierzono pięć razy; raportowana jest mediana. Pomiar Solr wykorzystuje precyzyjny zegar klienta i obejmuje całe żądanie HTTP. Solr zwraca też pomocniczy, całkowity <code>QTime</code>, który dla szybkich zapytań wynosił 0 ms i nie nadawał się do wykresu.</p>
+  <table>
+    <tr><th>Rekordy</th><th>SQL LIKE (ms)</th><th>SQL full text (ms)</th><th>Solr (ms, klient)</th></tr>
+    <tr><td>50 000</td><td>310,127</td><td>2,240</td><td>1,652</td></tr>
+    <tr><td>250 000</td><td>428,139</td><td>8,765</td><td>1,767</td></tr>
+    <tr><td>500 000</td><td>757,659</td><td>53,311</td><td>2,203</td></tr>
+  </table>
+  <img src="scale_chart.png" alt="Wykres skalowania czasu wyszukiwania">
+  <p class="note"><b>Interpretacja:</b> LIKE jest najwolniejszy w tym teście. Czasy SQL full-text i Solr także rosną wraz ze zbiorem, lecz dla Solra widoczny przyrost jest mniejszy. Porównanie nie jest w pełni równoważne: zapytania SQL i Solr używają innych analizatorów tekstu i zwracają inną liczbę dopasowań. Ponadto SQL mierzy czas wewnątrz serwera, a Solr po stronie klienta wraz z HTTP. Wnioski należy więc traktować jako pomiar tego wdrożenia, a nie uniwersalny ranking produktów.</p>
+
+  <h2>6. GROUP BY kontra facety</h2>
+  <p>W obu systemach pogrupowano 500 000 dokumentów po <code>topic</code>, <code>article_type</code> oraz dacie modyfikacji w zakresach pięcioletnich (2000–2029). Wyniki liczności zgadzają się dla wszystkich 19 grup.</p>
+  <table>
+    <tr><th>Metoda</th><th>Mediana</th><th>Wyniki pomiarów</th></tr>
+    <tr><td>SQL GROUP BY (trzy grupowania razem)</td><td>577,391 ms</td><td>603,291; 558,830; 577,391; 551,552; 578,078</td></tr>
+    <tr><td>Solr — dwa facety kategoryczne i jeden zakresowy</td><td>8,377 ms</td><td>8,488; 8,325; 8,688; 8,377; 8,094</td></tr>
+  </table>
+  <img src="facet_comparison.png" alt="Porównanie liczności GROUP BY i facetów Solr">
+  <p class="small">Czas SQL jest mierzony wewnątrz PostgreSQL, a czas Solr obejmuje klienta HTTP. Zakresy operacji są zbliżone, lecz pomiary mają różny narzut. Szczegóły liczności znajdują się w <code>facet_comparison.csv</code>.</p>
+
+  <h2>7. Rozszerzenia i kompletność wymagań</h2>
+  <table>
+    <tr><th>Rozszerzenie</th><th>Status</th></tr>
+    <tr><td>Autouzupełnianie (poziom 4.0)</td><td class="ok">Wykonane i przetestowane</td></tr>
+    <tr><td>Głębokie stronicowanie Solr <code>cursorMark</code> (poziom 5.0)</td><td class="ok">Wykonane i przetestowane: 500 000 dokumentów, 501 stron; wynik w <code>cursor_mark_results.csv</code></td></tr>
+    <tr><td>Synchronizacja INSERT/UPDATE/DELETE SQL → Solr (poziom 5.0)</td><td class="ok">Wykonana i przetestowana end-to-end: INSERT, UPDATE i DELETE</td></tr>
+  </table>
+  <p class="note"><b>Ważne:</b> pełne przejście cursorMark sprawdzono na 500 000 dokumentów. Test integracyjny potwierdził synchronizację INSERT/UPDATE/DELETE. Aby synchronizować kolejne zmiany automatycznie, uruchom <code>python3 solr/sync_outbox.py --watch</code>; dostarczenie do Solr jest asynchroniczne.</p>
+
+  <h2>8. Brakujące pomiary i ograniczenia</h2>
+  <ul>
+    <li>Czasy importu do PostgreSQL i Solr nie zostały zapisane.</li>
+    <li>Czas budowy indeksu PostgreSQL nie został zachowany jako wynik pomiaru.</li>
+    <li>Użyto jednego lokalnego środowiska; brak odtworzeń na innym sprzęcie i kontroli obciążenia systemu.</li>
+    <li>Zapytania wyszukujące SQL i Solr mają różne analizatory, dlatego ich liczby trafień różnią się.</li>
+    <li>Wykresy i liczności pochodzą z rzeczywistych plików wynikowych projektu. Nie wstawiono wartości dla niezmierzonych etapów.</li>
+  </ul>
+
+  <h2>9. Pliki projektu i odtwarzanie</h2>
+  <p>Instrukcje uruchomienia znajdują się w <code>README.md</code>. SQL znajduje się w <code>database/</code>, konfiguracja i narzędzia Solr w <code>solr/</code>, dane i walidator w <code>data-set/</code>. CSV, wykresy i to sprawozdanie są zapisane obok README.</p>
+  <p>Projekt nie został spakowany do ZIP zgodnie z życzeniem autora. Przed oddaniem należy sprawdzić licencję źródła, dołączyć wymagane pliki wynikowe oraz upewnić się, że nie ma w nich haseł ani danych uwierzytelniających.</p>
+</body>
+</html>

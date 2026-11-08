@@ -1,0 +1,42 @@
+{
+  "add-field": [
+    {
+      "name": "title",
+      "type": "text_general",
+      "indexed": true,
+      "stored": true,
+      "multiValued": false
+    },
+    {
+      "name": "text",
+      "type": "text_general",
+      "indexed": true,
+      "stored": true,
+      "multiValued": false
+    },
+    {
+      "name": "topic",
+      "type": "string",
+      "indexed": true,
+      "stored": true,
+      "docValues": true,
+      "multiValued": false
+    },
+    {
+      "name": "article_type",
+      "type": "string",
+      "indexed": true,
+      "stored": true,
+      "docValues": true,
+      "multiValued": false
+    },
+    {
+      "name": "date_modified",
+      "type": "pdate",
+      "indexed": true,
+      "stored": true,
+      "docValues": true,
+      "multiValued": false
+    }
+  ]
+}

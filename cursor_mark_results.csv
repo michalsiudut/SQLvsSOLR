@@ -1,0 +1,2 @@
+core,documents,rows_per_page,pages,total_client_ms,median_page_ms,warmup_page_ms
+wikipedia,500000,1000,501,8199.099,16.302,44.035

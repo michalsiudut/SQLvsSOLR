@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600">
+<rect width="100%" height="100%" fill="#f3f6fb"/>
+<text x="600" y="40" text-anchor="middle" font-family="Arial,sans-serif" font-size="25" font-weight="700" fill="#172033">SQL GROUP BY vs. Solr Facets</text>
+<text x="600" y="68" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" fill="#536176">500,000 articles  •  SQL median: 577.391 ms  •  Solr median: 8.377 ms</text>
+<rect x="440" y="88" width="13" height="13" rx="3" fill="#2563eb"/>
+<text x="460" y="99" font-family="Arial,sans-serif" font-size="12" fill="#35445a">SQL GROUP BY</text>
+<rect x="585" y="88" width="13" height="13" rx="3" fill="#0f9d78"/>
+<text x="605" y="99" font-family="Arial,sans-serif" font-size="12" fill="#35445a">Solr Facet</text>
+<rect x="25" y="118" width="365" height="414" rx="14" fill="#ffffff" stroke="#e0e6ef"/>
+<text x="43" y="148" font-family="Arial,sans-serif" font-size="14" font-weight="700" letter-spacing="1" fill="#26354a">TOPIC</text>
+<text x="372" y="148" text-anchor="end" font-family="Arial,sans-serif" font-size="11" fill="#78869a">7 groups</text>
+<text x="43" y="187" font-family="Arial,sans-serif" font-size="11" fill="#35445a">other</text>
+<rect x="143" y="184" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="143" y="184" width="165.0" height="11" rx="5.5" fill="#2563eb"/>
+<text x="314" y="193" font-family="Arial,sans-serif" font-size="10" fill="#536176">183,601</text>
+<rect x="143" y="200" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="143" y="200" width="165.0" height="11" rx="5.5" fill="#0f9d78"/>
+<text x="314" y="209" font-family="Arial,sans-serif" font-size="10" fill="#536176">183,601</text>
+<text x="43" y="235" font-family="Arial,sans-serif" font-size="11" fill="#35445a">sports</text>
+<rect x="143" y="232" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="143" y="232" width="78.0" height="11" rx="5.5" fill="#2563eb"/>
+<text x="314" y="241" font-family="Arial,sans-serif" font-size="10" fill="#536176">86,764</text>
+<rect x="143" y="248" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="143" y="248" width="78.0" height="11" rx="5.5" fill="#0f9d78"/>
+<text x="314" y="257" font-family="Arial,sans-serif" font-size="10" fill="#536176">86,764</text>
+<text x="43" y="283" font-family="Arial,sans-serif" font-size="11" fill="#35445a">geography</text>
+<rect x="143" y="280" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="143" y="280" width="75.5" height="11" rx="5.5" fill="#2563eb"/>
+<text x="314" y="289" font-family="Arial,sans-serif" font-size="10" fill="#536176">84,012</text>
+<rect x="143" y="296" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="143" y="296" width="75.5" height="11" rx="5.5" fill="#0f9d78"/>
+<text x="314" y="305" font-family="Arial,sans-serif" font-size="10" fill="#536176">84,012</text>
+<text x="43" y="331" font-family="Arial,sans-serif" font-size="11" fill="#35445a">history</text>
+<rect x="143" y="328" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="143" y="328" width="73.7" height="11" rx="5.5" fill="#2563eb"/>
+<text x="314" y="337" font-family="Arial,sans-serif" font-size="10" fill="#536176">81,958</text>
+<rect x="143" y="344" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="143" y="344" width="73.7" height="11" rx="5.5" fill="#0f9d78"/>
+<text x="314" y="353" font-family="Arial,sans-serif" font-size="10" fill="#536176">81,958</text>
+<text x="43" y="379" font-family="Arial,sans-serif" font-size="11" fill="#35445a">culture</text>
+<rect x="143" y="376" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="143" y="376" width="22.5" height="11" rx="5.5" fill="#2563eb"/>
+<text x="314" y="385" font-family="Arial,sans-serif" font-size="10" fill="#536176">25,010</text>
+<rect x="143" y="392" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="143" y="392" width="22.5" height="11" rx="5.5" fill="#0f9d78"/>
+<text x="314" y="401" font-family="Arial,sans-serif" font-size="10" fill="#536176">25,010</text>
+<text x="43" y="427" font-family="Arial,sans-serif" font-size="11" fill="#35445a">politics</text>
+<rect x="143" y="424" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="143" y="424" width="20.1" height="11" rx="5.5" fill="#2563eb"/>
+<text x="314" y="433" font-family="Arial,sans-serif" font-size="10" fill="#536176">22,398</text>
+<rect x="143" y="440" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="143" y="440" width="20.1" height="11" rx="5.5" fill="#0f9d78"/>
+<text x="314" y="449" font-family="Arial,sans-serif" font-size="10" fill="#536176">22,398</text>
+<text x="43" y="475" font-family="Arial,sans-serif" font-size="11" fill="#35445a">science</text>
+<rect x="143" y="472" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="143" y="472" width="14.6" height="11" rx="5.5" fill="#2563eb"/>
+<text x="314" y="481" font-family="Arial,sans-serif" font-size="10" fill="#536176">16,257</text>
+<rect x="143" y="488" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="143" y="488" width="14.6" height="11" rx="5.5" fill="#0f9d78"/>
+<text x="314" y="497" font-family="Arial,sans-serif" font-size="10" fill="#536176">16,257</text>
+<rect x="415" y="118" width="365" height="366" rx="14" fill="#ffffff" stroke="#e0e6ef"/>
+<text x="433" y="148" font-family="Arial,sans-serif" font-size="14" font-weight="700" letter-spacing="1" fill="#26354a">ARTICLE TYPE</text>
+<text x="762" y="148" text-anchor="end" font-family="Arial,sans-serif" font-size="11" fill="#78869a">6 groups</text>
+<text x="433" y="187" font-family="Arial,sans-serif" font-size="11" fill="#35445a">general</text>
+<rect x="533" y="184" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="533" y="184" width="165.0" height="11" rx="5.5" fill="#2563eb"/>
+<text x="704" y="193" font-family="Arial,sans-serif" font-size="10" fill="#536176">421,960</text>
+<rect x="533" y="200" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="533" y="200" width="165.0" height="11" rx="5.5" fill="#0f9d78"/>
+<text x="704" y="209" font-family="Arial,sans-serif" font-size="10" fill="#536176">421,960</text>
+<text x="433" y="235" font-family="Arial,sans-serif" font-size="11" fill="#35445a">person</text>
+<rect x="533" y="232" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="533" y="232" width="15.9" height="11" rx="5.5" fill="#2563eb"/>
+<text x="704" y="241" font-family="Arial,sans-serif" font-size="10" fill="#536176">40,707</text>
+<rect x="533" y="248" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="533" y="248" width="15.9" height="11" rx="5.5" fill="#0f9d78"/>
+<text x="704" y="257" font-family="Arial,sans-serif" font-size="10" fill="#536176">40,707</text>
+<text x="433" y="283" font-family="Arial,sans-serif" font-size="11" fill="#35445a">event</text>
+<rect x="533" y="280" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="533" y="280" width="9.0" height="11" rx="5.5" fill="#2563eb"/>
+<text x="704" y="289" font-family="Arial,sans-serif" font-size="10" fill="#536176">23,006</text>
+<rect x="533" y="296" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="533" y="296" width="9.0" height="11" rx="5.5" fill="#0f9d78"/>
+<text x="704" y="305" font-family="Arial,sans-serif" font-size="10" fill="#536176">23,006</text>
+<text x="433" y="331" font-family="Arial,sans-serif" font-size="11" fill="#35445a">media</text>
+<rect x="533" y="328" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="533" y="328" width="2.0" height="11" rx="5.5" fill="#2563eb"/>
+<text x="704" y="337" font-family="Arial,sans-serif" font-size="10" fill="#536176">5,192</text>
+<rect x="533" y="344" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="533" y="344" width="2.0" height="11" rx="5.5" fill="#0f9d78"/>
+<text x="704" y="353" font-family="Arial,sans-serif" font-size="10" fill="#536176">5,192</text>
+<text x="433" y="379" font-family="Arial,sans-serif" font-size="11" fill="#35445a">organization</text>
+<rect x="533" y="376" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="533" y="376" width="1.9" height="11" rx="5.5" fill="#2563eb"/>
+<text x="704" y="385" font-family="Arial,sans-serif" font-size="10" fill="#536176">4,982</text>
+<rect x="533" y="392" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="533" y="392" width="1.9" height="11" rx="5.5" fill="#0f9d78"/>
+<text x="704" y="401" font-family="Arial,sans-serif" font-size="10" fill="#536176">4,982</text>
+<text x="433" y="427" font-family="Arial,sans-serif" font-size="11" fill="#35445a">location</text>
+<rect x="533" y="424" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="533" y="424" width="1.6" height="11" rx="5.5" fill="#2563eb"/>
+<text x="704" y="433" font-family="Arial,sans-serif" font-size="10" fill="#536176">4,153</text>
+<rect x="533" y="440" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="533" y="440" width="1.6" height="11" rx="5.5" fill="#0f9d78"/>
+<text x="704" y="449" font-family="Arial,sans-serif" font-size="10" fill="#536176">4,153</text>
+<rect x="805" y="118" width="365" height="366" rx="14" fill="#ffffff" stroke="#e0e6ef"/>
+<text x="823" y="148" font-family="Arial,sans-serif" font-size="14" font-weight="700" letter-spacing="1" fill="#26354a">MODIFIED DATE</text>
+<text x="1152" y="148" text-anchor="end" font-family="Arial,sans-serif" font-size="11" fill="#78869a">6 groups</text>
+<text x="823" y="187" font-family="Arial,sans-serif" font-size="11" fill="#35445a">2020–2024</text>
+<rect x="923" y="184" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="923" y="184" width="165.0" height="11" rx="5.5" fill="#2563eb"/>
+<text x="1094" y="193" font-family="Arial,sans-serif" font-size="10" fill="#536176">286,481</text>
+<rect x="923" y="200" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="923" y="200" width="165.0" height="11" rx="5.5" fill="#0f9d78"/>
+<text x="1094" y="209" font-family="Arial,sans-serif" font-size="10" fill="#536176">286,481</text>
+<text x="823" y="235" font-family="Arial,sans-serif" font-size="11" fill="#35445a">2025–2029</text>
+<rect x="923" y="232" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="923" y="232" width="110.9" height="11" rx="5.5" fill="#2563eb"/>
+<text x="1094" y="241" font-family="Arial,sans-serif" font-size="10" fill="#536176">192,617</text>
+<rect x="923" y="248" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="923" y="248" width="110.9" height="11" rx="5.5" fill="#0f9d78"/>
+<text x="1094" y="257" font-family="Arial,sans-serif" font-size="10" fill="#536176">192,617</text>
+<text x="823" y="283" font-family="Arial,sans-serif" font-size="11" fill="#35445a">2015–2019</text>
+<rect x="923" y="280" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="923" y="280" width="9.4" height="11" rx="5.5" fill="#2563eb"/>
+<text x="1094" y="289" font-family="Arial,sans-serif" font-size="10" fill="#536176">16,322</text>
+<rect x="923" y="296" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="923" y="296" width="9.4" height="11" rx="5.5" fill="#0f9d78"/>
+<text x="1094" y="305" font-family="Arial,sans-serif" font-size="10" fill="#536176">16,322</text>
+<text x="823" y="331" font-family="Arial,sans-serif" font-size="11" fill="#35445a">2010–2014</text>
+<rect x="923" y="328" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="923" y="328" width="2.5" height="11" rx="5.5" fill="#2563eb"/>
+<text x="1094" y="337" font-family="Arial,sans-serif" font-size="10" fill="#536176">4,285</text>
+<rect x="923" y="344" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="923" y="344" width="2.5" height="11" rx="5.5" fill="#0f9d78"/>
+<text x="1094" y="353" font-family="Arial,sans-serif" font-size="10" fill="#536176">4,285</text>
+<text x="823" y="379" font-family="Arial,sans-serif" font-size="11" fill="#35445a">2005–2009</text>
+<rect x="923" y="376" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="923" y="376" width="1.0" height="11" rx="5.5" fill="#2563eb"/>
+<text x="1094" y="385" font-family="Arial,sans-serif" font-size="10" fill="#536176">295</text>
+<rect x="923" y="392" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="923" y="392" width="1.0" height="11" rx="5.5" fill="#0f9d78"/>
+<text x="1094" y="401" font-family="Arial,sans-serif" font-size="10" fill="#536176">295</text>
+<text x="823" y="427" font-family="Arial,sans-serif" font-size="11" fill="#35445a">2000–2004</text>
+<rect x="923" y="424" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="923" y="424" width="0.0" height="11" rx="5.5" fill="#2563eb"/>
+<text x="1094" y="433" font-family="Arial,sans-serif" font-size="10" fill="#536176">0</text>
+<rect x="923" y="440" width="165" height="11" rx="5.5" fill="#edf1f7"/>
+<rect x="923" y="440" width="0.0" height="11" rx="5.5" fill="#0f9d78"/>
+<text x="1094" y="449" font-family="Arial,sans-serif" font-size="10" fill="#536176">0</text>
+<text x="600" y="580" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#536176">All SQL and Solr group counts match. Counts use the same dataset and date buckets.</text>
+</svg>
