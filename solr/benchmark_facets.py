@@ -61,11 +61,13 @@ def main() -> None:
     parser.add_argument("--url", default="http://localhost:8983/solr")
     parser.add_argument("--core", default="wikipedia")
     parser.add_argument("--repetitions", type=int, default=5)
-    parser.add_argument("--output", type=Path, default=Path("solr_facets_results.csv"))
+    parser.add_argument(
+        "--output", type=Path, default=Path("csv/solr_facets_results.csv")
+    )
     parser.add_argument(
         "--counts-output",
         type=Path,
-        default=Path("solr_facet_counts.csv"),
+        default=Path("csv/solr_facet_counts.csv"),
     )
     args = parser.parse_args()
     if args.repetitions < 1:

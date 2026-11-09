@@ -52,7 +52,7 @@ Nie powtarzaj importu do już zapełnionej tabeli. Do pomiarów skalowania (tabe
 
 ```bash
 sudo docker exec -i lab3-postgres psql -U lab3 -d lab3 < database/05_prepare_scale.sql
-sudo docker exec -i lab3-postgres psql -X -q -U lab3 -d lab3 < database/06_benchmark_scale.sql > sql_scale_results.csv
+sudo docker exec -i lab3-postgres psql -X -q -U lab3 -d lab3 < database/06_benchmark_scale.sql > csv/sql_scale_results.csv
 python3 database/plot_scale.py
 ```
 
@@ -133,9 +133,8 @@ w [sprawozdaniu](./report.html) i skryptach `solr/prepare_scale_cores.sh`,
 - `data-set/` — pobieranie, walidacja i źródłowy CSV (duży plik).
 - `database/` — DDL, zapytania, benchmarki i narzędzia porównawcze.
 - `solr/` — schemat, setup, loader, zapytania, benchmarki i facety.
-- `*_results.csv`, `*_counts.csv` — zebrane pomiary i liczności.
-- `scale_chart.svg`, `facet_comparison.svg` — wykresy wektorowe; wersje PNG
-  są osadzone w PDF.
+- `csv/` — zebrane pomiary i liczności w formacie CSV.
+- `svg/` — wykresy wektorowe; wersje PNG są osadzone w PDF.
 - `report.html`, `report.pdf` — sprawozdanie i jego źródło HTML.
 
 CSV z danymi nie jest dołączony do repozytorium. Przed przekazaniem projektu
@@ -146,6 +145,6 @@ sprawdź warunki licencyjne źródłowego zbioru i wymagania prowadzącego.
 Zebrane są pomiary wyszukiwania i facetingu. Rozszerzenia poziomu 5.0 —
 `cursorMark` oraz synchronizacja zmian SQL → Solr — są zaimplementowane i
 przetestowane. Pełne stronicowanie 500 000 dokumentów zapisano w
-`cursor_mark_results.csv`; test integracyjny potwierdził INSERT, UPDATE i
+`csv/cursor_mark_results.csv`; test integracyjny potwierdził INSERT, UPDATE i
 DELETE. Przed oddaniem sprawdź jeszcze, czy masz zachowane czasy importu i
 budowy indeksów.

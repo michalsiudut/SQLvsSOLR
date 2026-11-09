@@ -40,7 +40,9 @@ def main() -> None:
     parser.add_argument("--url", default="http://localhost:8983/solr")
     parser.add_argument("--core", default="wikipedia")
     parser.add_argument("--rows", type=int, default=1000)
-    parser.add_argument("--output", type=Path, default=Path("cursor_mark_results.csv"))
+    parser.add_argument(
+        "--output", type=Path, default=Path("csv/cursor_mark_results.csv")
+    )
     args = parser.parse_args()
     if args.rows < 1:
         parser.error("--rows must be at least 1")

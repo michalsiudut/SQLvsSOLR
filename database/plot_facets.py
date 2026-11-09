@@ -109,7 +109,7 @@ def make_chart(
     verdict = (
         "All SQL and Solr group counts match."
         if all_match
-        else "Differences are listed in facet_comparison.csv."
+        else "Differences are listed in csv/facet_comparison.csv."
     )
     svg.extend(
         [
@@ -127,19 +127,21 @@ def main() -> None:
     parser.add_argument(
         "--comparison",
         type=Path,
-        default=Path("facet_comparison.csv"),
+        default=Path("csv/facet_comparison.csv"),
     )
     parser.add_argument(
         "--sql-timing",
         type=Path,
-        default=Path("sql_facets_results.csv"),
+        default=Path("csv/sql_facets_results.csv"),
     )
     parser.add_argument(
         "--solr-timing",
         type=Path,
-        default=Path("solr_facets_results.csv"),
+        default=Path("csv/solr_facets_results.csv"),
     )
-    parser.add_argument("--output", type=Path, default=Path("facet_comparison.svg"))
+    parser.add_argument(
+        "--output", type=Path, default=Path("svg/facet_comparison.svg")
+    )
     args = parser.parse_args()
 
     groups = read_comparison(args.comparison)

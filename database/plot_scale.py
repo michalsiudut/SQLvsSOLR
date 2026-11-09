@@ -28,11 +28,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Create an SVG scaling chart from SQL and Solr benchmark CSVs."
     )
-    parser.add_argument("--sql", type=Path, default=Path("sql_scale_results.csv"))
+    parser.add_argument("--sql", type=Path, default=Path("csv/sql_scale_results.csv"))
     parser.add_argument(
-        "--solr", type=Path, default=Path("solr_scale_results.csv")
+        "--solr", type=Path, default=Path("csv/solr_scale_results.csv")
     )
-    parser.add_argument("--output", type=Path, default=Path("scale_chart.svg"))
+    parser.add_argument("--output", type=Path, default=Path("svg/scale_chart.svg"))
     args = parser.parse_args()
 
     series = read_results(args.sql, "record_count")

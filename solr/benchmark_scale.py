@@ -47,7 +47,9 @@ def main() -> None:
         "--url", default="http://localhost:8983/solr", help="Solr base URL"
     )
     parser.add_argument("--repetitions", type=int, default=5)
-    parser.add_argument("--output", type=Path, default=Path("solr_scale_results.csv"))
+    parser.add_argument(
+        "--output", type=Path, default=Path("csv/solr_scale_results.csv")
+    )
     args = parser.parse_args()
     if args.repetitions < 1:
         parser.error("--repetitions must be at least 1")

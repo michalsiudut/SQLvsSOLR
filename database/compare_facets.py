@@ -18,10 +18,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Compare SQL GROUP BY and Solr facet counts."
     )
-    parser.add_argument("--sql", type=Path, default=Path("sql_facet_counts.csv"))
-    parser.add_argument("--solr", type=Path, default=Path("solr_facet_counts.csv"))
+    parser.add_argument("--sql", type=Path, default=Path("csv/sql_facet_counts.csv"))
+    parser.add_argument("--solr", type=Path, default=Path("csv/solr_facet_counts.csv"))
     parser.add_argument(
-        "--output", type=Path, default=Path("facet_comparison.csv")
+        "--output", type=Path, default=Path("csv/facet_comparison.csv")
     )
     args = parser.parse_args()
 

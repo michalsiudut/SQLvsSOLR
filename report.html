@@ -87,13 +87,13 @@
     <tr><td>Solr — dwa facety kategoryczne i jeden zakresowy</td><td>8,377 ms</td><td>8,488; 8,325; 8,688; 8,377; 8,094</td></tr>
   </table>
   <img src="facet_comparison.png" alt="Porównanie liczności GROUP BY i facetów Solr">
-  <p class="small">Czas SQL jest mierzony wewnątrz PostgreSQL, a czas Solr obejmuje klienta HTTP. Zakresy operacji są zbliżone, lecz pomiary mają różny narzut. Szczegóły liczności znajdują się w <code>facet_comparison.csv</code>.</p>
+  <p class="small">Czas SQL jest mierzony wewnątrz PostgreSQL, a czas Solr obejmuje klienta HTTP. Zakresy operacji są zbliżone, lecz pomiary mają różny narzut. Szczegóły liczności znajdują się w <code>csv/facet_comparison.csv</code>.</p>
 
   <h2>7. Rozszerzenia i kompletność wymagań</h2>
   <table>
     <tr><th>Rozszerzenie</th><th>Status</th></tr>
     <tr><td>Autouzupełnianie (poziom 4.0)</td><td class="ok">Wykonane i przetestowane</td></tr>
-    <tr><td>Głębokie stronicowanie Solr <code>cursorMark</code> (poziom 5.0)</td><td class="ok">Wykonane i przetestowane: 500 000 dokumentów, 501 stron; wynik w <code>cursor_mark_results.csv</code></td></tr>
+    <tr><td>Głębokie stronicowanie Solr <code>cursorMark</code> (poziom 5.0)</td><td class="ok">Wykonane i przetestowane: 500 000 dokumentów, 501 stron; wynik w <code>csv/cursor_mark_results.csv</code></td></tr>
     <tr><td>Synchronizacja INSERT/UPDATE/DELETE SQL → Solr (poziom 5.0)</td><td class="ok">Wykonana i przetestowana end-to-end: INSERT, UPDATE i DELETE</td></tr>
   </table>
   <p class="note"><b>Ważne:</b> pełne przejście cursorMark sprawdzono na 500 000 dokumentów. Test integracyjny potwierdził synchronizację INSERT/UPDATE/DELETE. Aby synchronizować kolejne zmiany automatycznie, uruchom <code>python3 solr/sync_outbox.py --watch</code>; dostarczenie do Solr jest asynchroniczne.</p>
