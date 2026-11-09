@@ -1,1 +1,3 @@
 stage,records,elapsed_ms,scope
+postgres_copy,500000,11512,benchmark_staging
+postgres_full_text_index,500000,202987,benchmark_staging

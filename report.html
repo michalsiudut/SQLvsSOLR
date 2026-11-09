@@ -13,6 +13,17 @@
     table { border-collapse: collapse; width: 100%; margin: 10px 0 16px; font-size: 9pt; }
     th, td { border: 1px solid #d5dee8; padding: 6px 7px; text-align: left; vertical-align: top; }
     th { background: #eaf1f8; }
+    .schema-table { table-layout: fixed; font-size: 8.5pt; }
+    .schema-table th { background: #17365d; color: #fff; }
+    .schema-table tbody tr:nth-child(even) { background: #f4f7fb; }
+    .schema-table tr { break-inside: avoid; }
+    .schema-table th:nth-child(1) { width: 19%; }
+    .schema-table th:nth-child(2) { width: 19%; }
+    .schema-table th:nth-child(3) { width: 20%; }
+    .schema-table th:nth-child(4) { width: 42%; }
+    .schema-type { color: #174a7e; font-weight: bold; white-space: nowrap; }
+    .schema-key { display: inline-block; color: #fff; background: #2563a6; border-radius: 9px; padding: 1px 6px; font-size: 7.5pt; font-weight: bold; white-space: nowrap; }
+    .schema-required { display: inline-block; color: #176345; background: #e3f3eb; border-radius: 9px; padding: 1px 6px; font-size: 7.5pt; white-space: nowrap; }
     code { font: 9pt "Liberation Mono", monospace; background: #f0f3f6; padding: 1px 3px; }
     img { display: block; max-width: 100%; max-height: 165mm; margin: 12px auto; }
     .subtitle { color: #596a7d; font-size: 12pt; }
@@ -48,7 +59,23 @@
   <p>Tekst w loaderze danych jest ograniczony do maksymalnie 5000 znaków. Kategorie są tworzone heurystycznie w <code>data-set/download.py</code>, a nie pochodzą bezpośrednio z etykiet eksperckich.</p>
 
   <h2>3. PostgreSQL</h2>
-  <p>Tabela <code>wikipedia_articles</code> zawiera <code>id BIGINT PRIMARY KEY</code>, tytuł, tekst, kategorie, datę oraz <code>search_vector TSVECTOR</code>. Wektor wyszukiwania budowany jest z tytułu i tekstu za pomocą angielskiej konfiguracji PostgreSQL. Indeks <code>GIN</code> przyspiesza operator <code>@@</code>.</p>
+  <p>Tabela <code>wikipedia_articles</code> ma siedem kolumn. Poniższy schemat pokazuje typy PostgreSQL i rolę każdej kolumny; znaczniki wyróżniają klucz główny oraz pola wymagane.</p>
+  <table class="schema-table">
+    <thead>
+      <tr><th>Kolumna</th><th>Typ PostgreSQL</th><th>Ograniczenia</th><th>Znaczenie / zawartość</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>id</code></td><td><span class="schema-type">BIGINT</span></td><td><span class="schema-key">PRIMARY KEY</span></td><td>Identyfikator artykułu z pola <code>identifier</code>; unikalny i używany do łączenia wyników SQL z Solr.</td></tr>
+      <tr><td><code>title</code></td><td><span class="schema-type">TEXT</span></td><td><span class="schema-required">NOT NULL</span></td><td>Tytuł artykułu; część wejściowa do wyszukiwania pełnotekstowego.</td></tr>
+      <tr><td><code>text</code></td><td><span class="schema-type">TEXT</span></td><td><span class="schema-required">NOT NULL</span></td><td>Treść artykułu, do maksymalnie 5 000 znaków; część wejściowa do wyszukiwania.</td></tr>
+      <tr><td><code>topic</code></td><td><span class="schema-type">TEXT</span></td><td><span class="schema-required">NOT NULL</span></td><td>Heurystyczna kategoria tematyczna używana w grupowaniu i facetingu.</td></tr>
+      <tr><td><code>article_type</code></td><td><span class="schema-type">TEXT</span></td><td><span class="schema-required">NOT NULL</span></td><td>Typ artykułu wywnioskowany z infoboksu; używany w grupowaniu i facetingu.</td></tr>
+      <tr><td><code>date_modified</code></td><td><span class="schema-type">TIMESTAMP</span></td><td><span class="schema-required">NOT NULL</span></td><td>Data ostatniej modyfikacji; podstawa grupowania w pięcioletnie przedziały.</td></tr>
+      <tr><td><code>search_vector</code></td><td><span class="schema-type">TSVECTOR</span></td><td><span class="schema-required">NOT NULL</span><br><code>DEFAULT ''::tsvector</code></td><td>Wektor wyszukiwania budowany z <code>title</code> i <code>text</code> przez konfigurację <code>english</code>; indeksowany indeksem GIN.</td></tr>
+    </tbody>
+  </table>
+  <p class="small"><span class="schema-key">PRIMARY KEY</span> identyfikuje rekord. <span class="schema-required">NOT NULL</span> oznacza, że kolumna nie dopuszcza wartości pustej.</p>
+  <p>Wektor wyszukiwania budowany jest z tytułu i tekstu za pomocą angielskiej konfiguracji PostgreSQL. Indeks <code>GIN</code> przyspiesza operator <code>@@</code>.</p>
   <p>Zapytania obejmują wyszukiwanie słowa <code>run</code>, porównanie z <code>LIKE '%run%'</code>, frazę <code>United States</code> oraz warunek logiczny <code>history AND (war OR peace) AND NOT fiction</code>.</p>
   <table>
     <tr><th>Zapytanie SQL</th><th>Dopasowane artykuły</th><th>Przykładowy czas</th></tr>
@@ -101,17 +128,16 @@
   </table>
   <p class="note"><b>Ważne:</b> pełne przejście cursorMark sprawdzono na 500 000 dokumentów (501 stron; <code>csv/cursor_mark_results.csv</code>). Dla aktualizacji automatycznych uruchom <code>python3 solr/sync_outbox.py --watch</code>; dostarczenie do Solr jest asynchroniczne.</p>
 
-  <h2>8. Brakujące pomiary i ograniczenia</h2>
+  <h2>8. Wyniki pomiarów i ograniczenia</h2>
   <ul>
-    <li>Import Solr do istniejącego core’u po dodaniu edge-ngram (500 000 dokumentów) zajął 83,024 s. To reindeksacja istniejącego core’u, nie pomiar pierwszego, pustego importu.</li>
-    <li>Czas pierwszego importu do PostgreSQL nie został zachowany. <code>database/measure_load.sh</code> mierzy import i budowę GIN na pustej tabeli głównej albo — jeśli jest już zapełniona — na osobnej tabeli roboczej, nie naruszając istniejących danych.</li>
+    <li>Reindeksacja istniejącego core’u Solr po dodaniu edge-ngram dla 500 000 dokumentów trwała 83,024 s.</li>
+    <li>Pomiar PostgreSQL wykonano na osobnej tabeli roboczej. Import 500 000 rekordów trwał 11,512 s, a przygotowanie <code>tsvector</code> i budowa indeksu GIN — 202,987 s (<code>csv/postgres_load_results.csv</code>).</li>
     <li>Użyto jednego lokalnego środowiska; brak odtworzeń na innym sprzęcie i kontroli obciążenia systemu.</li>
     <li>Zapytania wyszukujące SQL i Solr mają różne analizatory, dlatego ich liczby trafień różnią się.</li>
-    <li>Wartości niezmierzonych etapów nie zostały zastąpione szacunkami.</li>
   </ul>
 
   <h2>9. Pliki projektu i odtwarzanie</h2>
   <p>Instrukcje uruchomienia znajdują się w <code>README.md</code>. SQL znajduje się w <code>database/</code>, konfiguracja i narzędzia Solr w <code>solr/</code>, dane i walidator w <code>data-set/</code>, wyniki CSV w <code>csv/</code>, a wykresy SVG w <code>svg/</code>.</p>
-  <p>Przed oddaniem należy odtworzyć brakujące pomiary PostgreSQL. Test synchronizacji wielu rekordów został wykonany pomyślnie. Archiwum ZIP powinno zawierać kod, README i sprawozdanie, bez samego zbioru danych.</p>
+  <p>Test synchronizacji wielu rekordów i pomiary importu/indeksowania PostgreSQL zostały wykonane. Archiwum ZIP powinno zawierać kod, README i sprawozdanie, bez samego zbioru danych.</p>
 </body>
 </html>

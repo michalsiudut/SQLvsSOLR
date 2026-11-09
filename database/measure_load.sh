@@ -51,17 +51,21 @@ mkdir -p "$(dirname -- "$OUTPUT")"
 printf 'stage,records,elapsed_ms,scope\n' > "$OUTPUT"
 
 start_ns="$(date +%s%N)"
-copy_result="$("${DOCKER_ARGS[@]}" exec -i "$POSTGRES_CONTAINER" \
+"${DOCKER_ARGS[@]}" exec -i "$POSTGRES_CONTAINER" \
   psql -X -q -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
   -c "\copy $TARGET_TABLE (id,title,text,topic,article_type,date_modified) FROM STDIN WITH (FORMAT csv, HEADER true)" \
-  < "$ROOT/data-set/wikipedia.csv")"
+  < "$ROOT/data-set/wikipedia.csv"
 end_ns="$(date +%s%N)"
 import_ms="$(( (end_ns - start_ns) / 1000000 ))"
-if [[ ! "$copy_result" =~ ^COPY[[:space:]]+([0-9]+)$ ]]; then
-  printf 'Unexpected PostgreSQL COPY result: %s\n' "$copy_result" >&2
+records="$(psql_exec "SELECT count(*) FROM $TARGET_TABLE")"
+if [[ ! "$records" =~ ^[0-9]+$ ]]; then
+  printf 'Could not verify the imported row count: %s\n' "$records" >&2
   exit 1
 fi
-records="${BASH_REMATCH[1]}"
+if [[ "$records" != "500000" ]]; then
+  printf 'Expected 500000 imported rows, found %s.\n' "$records" >&2
+  exit 1
+fi
 printf 'postgres_copy,%s,%s,%s\n' "$records" "$import_ms" "$SCOPE" >> "$OUTPUT"
 
 start_ns="$(date +%s%N)"
