@@ -2,6 +2,7 @@ import argparse
 import csv
 import json
 import os
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.error import HTTPError, URLError
@@ -66,6 +67,12 @@ def main() -> None:
         type=Path,
         help="Load only IDs listed one per line in this file.",
     )
+    parser.add_argument(
+        "--timing-output",
+        type=Path,
+        default=Path("csv/solr_import_results.csv"),
+        help="CSV file for the load elapsed-time result.",
+    )
     args = parser.parse_args()
 
     if args.batch_size < 1:
@@ -87,6 +94,7 @@ def main() -> None:
     endpoint = f"{args.url.rstrip('/')}/{args.core}/update?wt=json"
     batch: list[dict[str, str]] = []
     sent = 0
+    started_at = time.perf_counter()
 
     with args.csv.open("r", encoding="utf-8", newline="") as source:
         reader = csv.DictReader(source)
@@ -128,7 +136,17 @@ def main() -> None:
         b"<commit/>",
         "application/xml",
     )
+    elapsed_seconds = time.perf_counter() - started_at
+    args.timing_output.parent.mkdir(parents=True, exist_ok=True)
+    with args.timing_output.open("w", newline="", encoding="utf-8") as output:
+        writer = csv.writer(output)
+        writer.writerow(["core", "documents", "elapsed_seconds"])
+        writer.writerow([args.core, sent, f"{elapsed_seconds:.3f}"])
     print(f"Committed {sent:,} documents to Solr core '{args.core}'.")
+    print(
+        f"Import and commit took {elapsed_seconds:.3f} seconds; "
+        f"timing saved to {args.timing_output}."
+    )
 
 
 if __name__ == "__main__":

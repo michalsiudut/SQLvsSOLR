@@ -40,20 +40,27 @@ Polecenia uruchamiaj z katalogu głównego projektu:
 
 ```bash
 sudo docker exec -i lab3-postgres psql -U lab3 -d lab3 < database/01_schema.sql
-sudo docker exec -i lab3-postgres psql -U lab3 -d lab3 \
-  -c "\copy wikipedia_articles (id,title,text,topic,article_type,date_modified) FROM STDIN WITH (FORMAT csv, HEADER true, ENCODING 'UTF8')" \
-  < data-set/wikipedia.csv
-sudo docker exec -i lab3-postgres psql -U lab3 -d lab3 < database/02_build_full_text_index.sql
+bash database/measure_load.sh
 sudo docker exec -i lab3-postgres psql -U lab3 -d lab3 < database/03_search_queries.sql
 ```
 
-Nie powtarzaj importu do już zapełnionej tabeli. Do pomiarów skalowania (tabele
-50k/250k; wykonaj tylko raz):
+`measure_load.sh` mierzy import i indeksowanie. Jeśli tabela główna jest pusta,
+mierzy na niej; jeśli zawiera dane, tworzy tymczasową kopię schematu w
+`lab3_load_benchmark`, a po pomiarze usuwa tylko tę tabelę. Wyniki zapisuje do
+`csv/postgres_load_results.csv` z informacją, gdzie wykonano pomiar.
+Do pomiarów skalowania (tabele 50k/250k; wykonaj tylko raz):
 
 ```bash
 sudo docker exec -i lab3-postgres psql -U lab3 -d lab3 < database/05_prepare_scale.sql
 sudo docker exec -i lab3-postgres psql -X -q -U lab3 -d lab3 < database/06_benchmark_scale.sql > csv/sql_scale_results.csv
 python3 database/plot_scale.py
+```
+
+Ranking `ts_rank_cd` i porównanie ID z top-10 Solra:
+
+```bash
+bash database/export_top10.sh
+python3 solr/compare_top10.py
 ```
 
 Porównanie `GROUP BY` z facetami:
@@ -78,16 +85,32 @@ autouzupełnianie:
 ```bash
 bash solr/queries.sh
 bash solr/autocomplete.sh foot
+python3 solr/benchmark_autocomplete.py --prefix foot
 bash solr/facets.sh
 ```
 
+Loader zapisuje czas importu i commit do `csv/solr_import_results.csv`.
+Nowe core’y dostają pole edge-ngram z `schema.json`. Dla istniejącego core’u
+uruchom jednorazowo `bash solr/enable_autocomplete.sh`, a następnie ponownie
+załaduj CSV przez `python3 solr/load_data.py`, aby wypełnić pole `title_prefix`.
+Benchmark porównuje wynik tego pola z `lower(title) LIKE lower('foot%')` i
+zapisuje pomiary do `csv/autocomplete_results.csv`.
+
 ### Rozszerzenia poziomu 5.0
 
-Stronicowanie wszystkich dokumentów po `cursorMark` (z unikalnym sortowaniem
-po `id`) i zapis pomiaru do CSV:
+Pełne stronicowanie po `cursorMark`:
 
 ```bash
 python3 solr/cursor_mark.py --core wikipedia --rows 1000
+```
+
+Porównanie dalekiej strony (domyślnie offset 100 000, 1 000 dokumentów) przez
+`start/rows` i `cursorMark`; skrypt sprawdza, czy oba sposoby zwracają te same
+ID, mierzy po pięć rozgrzanych powtórzeń i zapisuje wynik w
+`csv/pagination_results.csv`:
+
+```bash
+python3 solr/benchmark_pagination.py --start 100000 --rows 1000
 ```
 
 Synchronizacja zmian SQL → Solr używa transakcyjnej kolejki outbox. Trigger
@@ -115,9 +138,10 @@ Domyślnie sprawdza kolejkę co 2 sekundy; interwał zmienisz przez
 konsumenta naraz. Zmiana SQL może być już zatwierdzona, zanim konsument
 przekaże ją do Solr, więc synchronizacja jest asynchroniczna.
 
-Test integracyjny wykonuje INSERT, UPDATE i DELETE oraz weryfikuje dokument w
-Solr. Zatrzymaj tryb `--watch` przed jego uruchomieniem — test uruchamia
-własnego konsumenta jednorazowego:
+Test integracyjny dodaje cztery rekordy, aktualizuje dwa, usuwa dwa i porównuje
+pola SQL z dokumentami Solr po każdej operacji. Ostatnie wykonanie zakończyło
+się sukcesem. Przed ponownym uruchomieniem zatrzymaj tryb `--watch` i opróżnij
+kolejkę outbox:
 
 ```bash
 bash solr/test_sync.sh
@@ -136,6 +160,7 @@ w [sprawozdaniu](./report.html) i skryptach `solr/prepare_scale_cores.sh`,
 - `csv/` — zebrane pomiary i liczności w formacie CSV.
 - `svg/` — wykresy wektorowe; wersje PNG są osadzone w PDF.
 - `report.html`, `report.pdf` — sprawozdanie i jego źródło HTML.
+- `database/measure_load.sh` oraz `solr/load_data.py` — pomiar importu i indeksowania.
 
 CSV z danymi nie jest dołączony do repozytorium. Przed przekazaniem projektu
 sprawdź warunki licencyjne źródłowego zbioru i wymagania prowadzącego.

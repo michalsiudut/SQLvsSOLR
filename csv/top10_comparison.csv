@@ -1,0 +1,4 @@
+query,sql_top10_count,solr_top10_count,overlap_count,overlap_ids,overlap_percent_of_sql
+run,10,10,0,,0.0
+phrase,10,10,0,,0.0
+boolean,10,10,0,,0.0

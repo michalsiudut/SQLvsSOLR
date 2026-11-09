@@ -1,0 +1,3 @@
+prefix,method,median_ms,runs_ms,matched_rows
+foot,SQL LIKE prefix,194.380,210.516;193.669;192.874;194.380;207.795,113
+foot,Solr edge-ngram,2.051,2.218;2.046;2.490;2.051;1.869,113

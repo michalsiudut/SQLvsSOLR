@@ -1,4 +1,33 @@
 {
+  "add-field-type": {
+    "name": "title_prefix_type",
+    "class": "solr.TextField",
+    "indexAnalyzer": {
+      "tokenizer": {
+        "class": "solr.KeywordTokenizerFactory"
+      },
+      "filters": [
+        {
+          "class": "solr.LowerCaseFilterFactory"
+        },
+        {
+          "class": "solr.EdgeNGramFilterFactory",
+          "minGramSize": 1,
+          "maxGramSize": 50
+        }
+      ]
+    },
+    "queryAnalyzer": {
+      "tokenizer": {
+        "class": "solr.KeywordTokenizerFactory"
+      },
+      "filters": [
+        {
+          "class": "solr.LowerCaseFilterFactory"
+        }
+      ]
+    }
+  },
   "add-field": [
     {
       "name": "title",
@@ -37,6 +66,17 @@
       "stored": true,
       "docValues": true,
       "multiValued": false
+    },
+    {
+      "name": "title_prefix",
+      "type": "title_prefix_type",
+      "indexed": true,
+      "stored": false,
+      "multiValued": false
     }
-  ]
+  ],
+  "add-copy-field": {
+    "source": "title",
+    "dest": "title_prefix"
+  }
 }

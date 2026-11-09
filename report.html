@@ -32,9 +32,10 @@
   <h2>1. Cel i zakres</h2>
   <p>Celem projektu jest porównanie PostgreSQL z Apache Solr podczas wyszukiwania w dużym zbiorze artykułów. Wykonano import danych, indeksowanie pełnotekstowe, przykładowe zapytania, facety oraz testy skalowania dla 50 000, 250 000 i 500 000 rekordów.</p>
   <p>Systemy uruchomiono w Dockerze. Wykorzystano PostgreSQL 17, Apache Solr 10 i Python 3.12.3.</p>
+  <p class="small">Środowisko pomiarowe: Ubuntu 24.04.5 LTS, Intel Core i5-11400H (6 rdzeni / 12 wątków), 32 GB RAM, dysk Samsung NVMe; Solr z <code>SOLR_HEAP=2g</code>.</p>
 
   <h2>2. Dane</h2>
-  <p>Zbiór pochodzi z Hugging Face: <code>wikimedia/structured-wikipedia</code>, konfiguracja <code>enwiki_namespace_0</code> (angielska Wikipedia). Plik <code>data-set/wikipedia.csv</code> ma 500 000 rekordów i około 843 MiB.</p>
+  <p>Zbiór pochodzi z <a href="https://huggingface.co/datasets/wikimedia/structured-wikipedia">Hugging Face: wikimedia/structured-wikipedia</a>, konfiguracja <code>enwiki_namespace_0</code> (angielska Wikipedia). Karta zbioru deklaruje licencję CC BY-SA 4.0; artykuły źródłowe Wikimedia mogą mieć dodatkowe warunki atrybucji, które należy zachować przy redystrybucji. Plik <code>data-set/wikipedia.csv</code> ma 500 000 rekordów i około 843 MiB.</p>
   <table>
     <tr><th>Kontrola</th><th>Wynik</th></tr>
     <tr><td>Rekordy / unikalne ID</td><td>500 000 / 500 000</td></tr>
@@ -43,7 +44,8 @@
     <tr><td>Kategorie</td><td><code>topic</code> — 7 wartości; <code>article_type</code> — 6 wartości</td></tr>
     <tr><td>Data</td><td>500 000 poprawnych wartości <code>date_modified</code></td></tr>
   </table>
-  <p>Tekst w loaderze danych jest ograniczony do maksymalnie 5000 znaków. Kategorie są tworzone heurystycznie w <code>data-set/download.py</code>, a nie pochodzą bezpośrednio z etykiet eksperckich. Przed dalszą redystrybucją danych należy sprawdzić warunki licencji zbioru i źródła.</p>
+  <p>Przykładowy rekord: ID <code>72535323</code>, tytuł <code>"Khan gizi" spring</code>, kategoria <code>geography</code>; tekst zaczyna się od: „Khan gizi spring is a spring located next to Khan's daughter Natevan's palace in the Çöl Qala neighborhood of Shusha.”</p>
+  <p>Tekst w loaderze danych jest ograniczony do maksymalnie 5000 znaków. Kategorie są tworzone heurystycznie w <code>data-set/download.py</code>, a nie pochodzą bezpośrednio z etykiet eksperckich.</p>
 
   <h2>3. PostgreSQL</h2>
   <p>Tabela <code>wikipedia_articles</code> zawiera <code>id BIGINT PRIMARY KEY</code>, tytuł, tekst, kategorie, datę oraz <code>search_vector TSVECTOR</code>. Wektor wyszukiwania budowany jest z tytułu i tekstu za pomocą angielskiej konfiguracji PostgreSQL. Indeks <code>GIN</code> przyspiesza operator <code>@@</code>.</p>
@@ -66,7 +68,8 @@
     <tr><td>Fraza <code>United States</code></td><td>38 188</td></tr>
     <tr><td>Warunek logiczny</td><td>3 984</td></tr>
   </table>
-  <p>Autouzupełnianie przez Terms Component działa na indeksie tytułów; prefiks <code>foot</code> zwrócił m.in. <code>football</code> i <code>footballer</code>.</p>
+  <p>Ranking top-10 porównano po ID dokumentów. Wspólne wyniki: <code>run</code> — 0/10, fraza — 0/10, warunek logiczny — 0/10 (<code>csv/top10_comparison.csv</code>). Zapytania używają różnych mechanizmów analizy i rankingu: PostgreSQL <code>ts_rank_cd</code> z konfiguracją English, a Solr eDisMax z BM25 i polami <code>title^3 text</code>. W tym zbiorze skutkuje to różnymi pierwszymi dziesiątkami; nie oznacza to braku wyników zapytań, lecz brak zgodności ich rankingu.</p>
+  <p>Autouzupełnianie używa pola <code>title_prefix</code>, kopii tytułu analizowanej przez KeywordTokenizer, LowerCase i EdgeNGram (1–50 znaków). Dla prefiksu <code>foot</code> liczba wyników Solr wyniosła 113, zgodnie z liczbą tytułów zaczynających się od tego prefiksu w źródłowym CSV. SQL <code>lower(title) LIKE lower('foot%')</code> również zwrócił 113 wyników. Mediany pięciu pomiarów: SQL 194,380 ms, Solr 2,051 ms; szczegóły w <code>csv/autocomplete_results.csv</code>.</p>
 
   <h2>5. Skalowanie wyszukiwania</h2>
   <p>Każdy pomiar poprzedzono rozgrzewką, a czas zapytania mierzono pięć razy; raportowana jest mediana. Pomiar Solr wykorzystuje precyzyjny zegar klienta i obejmuje całe żądanie HTTP. Solr zwraca też pomocniczy, całkowity <code>QTime</code>, który dla szybkich zapytań wynosił 0 ms i nie nadawał się do wykresu.</p>
@@ -91,24 +94,24 @@
 
   <h2>7. Rozszerzenia i kompletność wymagań</h2>
   <table>
-    <tr><th>Rozszerzenie</th><th>Status</th></tr>
-    <tr><td>Autouzupełnianie (poziom 4.0)</td><td class="ok">Wykonane i przetestowane</td></tr>
-    <tr><td>Głębokie stronicowanie Solr <code>cursorMark</code> (poziom 5.0)</td><td class="ok">Wykonane i przetestowane: 500 000 dokumentów, 501 stron; wynik w <code>csv/cursor_mark_results.csv</code></td></tr>
-    <tr><td>Synchronizacja INSERT/UPDATE/DELETE SQL → Solr (poziom 5.0)</td><td class="ok">Wykonana i przetestowana end-to-end: INSERT, UPDATE i DELETE</td></tr>
+    <tr><th>Rozszerzenie</th><th>Wynik</th></tr>
+    <tr><td>Autouzupełnianie (poziom 4.0)</td><td>Edge-ngram; dla <code>foot</code> 113 wyników w obu systemach. Mediany: SQL 194,380 ms; Solr 2,051 ms.</td></tr>
+    <tr><td>Głębokie stronicowanie: <code>start/rows</code> kontra <code>cursorMark</code> (poziom 5.0)</td><td>Offset 100 000, po 1 000 dokumentów; 5 rozgrzanych powtórzeń. <code>start/rows</code>: 376,914 ms / 1 żądanie; <code>cursorMark</code>: 1 362,369 ms / 101 żądań. Wszystkie 1 000 ID strony były identyczne. Dane w <code>csv/pagination_results.csv</code>.</td></tr>
+    <tr><td>Aktualizacje SQL → Solr (poziom 5.0)</td><td>Test zaliczony: INSERT 4, UPDATE 2 i DELETE 2 rekordów; po każdej operacji pola SQL i Solr były zgodne. Rekordy testowe usunięto.</td></tr>
   </table>
-  <p class="note"><b>Ważne:</b> pełne przejście cursorMark sprawdzono na 500 000 dokumentów. Test integracyjny potwierdził synchronizację INSERT/UPDATE/DELETE. Aby synchronizować kolejne zmiany automatycznie, uruchom <code>python3 solr/sync_outbox.py --watch</code>; dostarczenie do Solr jest asynchroniczne.</p>
+  <p class="note"><b>Ważne:</b> pełne przejście cursorMark sprawdzono na 500 000 dokumentów (501 stron; <code>csv/cursor_mark_results.csv</code>). Dla aktualizacji automatycznych uruchom <code>python3 solr/sync_outbox.py --watch</code>; dostarczenie do Solr jest asynchroniczne.</p>
 
   <h2>8. Brakujące pomiary i ograniczenia</h2>
   <ul>
-    <li>Czasy importu do PostgreSQL i Solr nie zostały zapisane.</li>
-    <li>Czas budowy indeksu PostgreSQL nie został zachowany jako wynik pomiaru.</li>
+    <li>Import Solr do istniejącego core’u po dodaniu edge-ngram (500 000 dokumentów) zajął 83,024 s. To reindeksacja istniejącego core’u, nie pomiar pierwszego, pustego importu.</li>
+    <li>Czas pierwszego importu do PostgreSQL nie został zachowany. <code>database/measure_load.sh</code> mierzy import i budowę GIN na pustej tabeli głównej albo — jeśli jest już zapełniona — na osobnej tabeli roboczej, nie naruszając istniejących danych.</li>
     <li>Użyto jednego lokalnego środowiska; brak odtworzeń na innym sprzęcie i kontroli obciążenia systemu.</li>
     <li>Zapytania wyszukujące SQL i Solr mają różne analizatory, dlatego ich liczby trafień różnią się.</li>
-    <li>Wykresy i liczności pochodzą z rzeczywistych plików wynikowych projektu. Nie wstawiono wartości dla niezmierzonych etapów.</li>
+    <li>Wartości niezmierzonych etapów nie zostały zastąpione szacunkami.</li>
   </ul>
 
   <h2>9. Pliki projektu i odtwarzanie</h2>
-  <p>Instrukcje uruchomienia znajdują się w <code>README.md</code>. SQL znajduje się w <code>database/</code>, konfiguracja i narzędzia Solr w <code>solr/</code>, dane i walidator w <code>data-set/</code>. CSV, wykresy i to sprawozdanie są zapisane obok README.</p>
-  <p>Projekt nie został spakowany do ZIP zgodnie z życzeniem autora. Przed oddaniem należy sprawdzić licencję źródła, dołączyć wymagane pliki wynikowe oraz upewnić się, że nie ma w nich haseł ani danych uwierzytelniających.</p>
+  <p>Instrukcje uruchomienia znajdują się w <code>README.md</code>. SQL znajduje się w <code>database/</code>, konfiguracja i narzędzia Solr w <code>solr/</code>, dane i walidator w <code>data-set/</code>, wyniki CSV w <code>csv/</code>, a wykresy SVG w <code>svg/</code>.</p>
+  <p>Przed oddaniem należy odtworzyć brakujące pomiary PostgreSQL. Test synchronizacji wielu rekordów został wykonany pomyślnie. Archiwum ZIP powinno zawierać kod, README i sprawozdanie, bez samego zbioru danych.</p>
 </body>
 </html>
